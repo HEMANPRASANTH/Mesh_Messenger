@@ -2,6 +2,7 @@ package com.bitchat.android.ui
 
 
 import android.util.Log
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -358,11 +359,10 @@ private fun MainHeader(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 8.dp) // Increased vertical padding
-            .height(72.dp), // Bigger "Board"
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp), // More rounded
+            .height(56.dp), // Compact "Board" matching profile height
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp), // More rounded
         color = colorScheme.surface.copy(alpha = 0.6f), // Glassy background
-        border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outline.copy(alpha = 0.2f)),
-        shadowElevation = 4.dp
+
     ) {
         Row(
             modifier = Modifier
@@ -371,25 +371,44 @@ private fun MainHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left: Nickname Only (Brand Removed)
+            // Left: Title "Chats"
             Row(verticalAlignment = Alignment.CenterVertically) {
-                NicknameEditor(
-                    value = nickname,
-                    onValueChange = onNicknameChange
+                Text(
+                    text = "Chats",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.SansSerif
+                    ),
+                    color = colorScheme.primary, // Or specific color
+                    fontSize = 32.sp
                 )
             }
 
             // Right: Shield + Hamburger Menu
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Large Shield Icon
-                Icon(
-                    imageVector = Icons.Outlined.Security,
-                    contentDescription = "Security Status",
-                    tint = Color(0xFF00E5FF), // Ice Blue
-                    modifier = Modifier
-                        .size(32.dp) // Large visibility
-                        .padding(end = 12.dp)
-                )
+                // Security Indicator Group
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(end = 12.dp)
+                ) {
+                    // Large Shield Icon
+                    Icon(
+                        imageVector = Icons.Outlined.Security,
+                        contentDescription = "Security Status",
+                        tint = Color(0xFF00E5FF), // Ice Blue
+                        modifier = Modifier
+                            .size(36.dp) // Large visibility
+                    )
+                    
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
+                    // Real-time Security Dot (Red/Yellow/Green)
+                    SecurityStatusDot(
+                        torStatus = torStatus,
+                        isConnected = isConnected,
+                        modifier = Modifier.size(10.dp)
+                    )
+                }
 
                 Box {
                     IconButton(onClick = { showMenu = true }) {
@@ -498,6 +517,55 @@ private fun MainHeader(
             }
         }
     }
+}
+
+@Composable
+fun SecurityStatusDot(
+    torStatus: com.bitchat.android.net.ArtiTorManager.TorStatus,
+    isConnected: Boolean,
+    modifier: Modifier = Modifier
+) {
+    // Logic for Security Dot color:
+    // Green (Okay) = Tor Connected OR (Tor Off AND Mesh Connected)
+    // Yellow (Medium) = Tor Handshaking/Bootstrapping
+    // Red (Risk) = Tor Error OR (Tor Off AND Not Connected)
+    
+    val pulseAnim = calculatePulseAlpha()
+    
+    val (dotColor, isPulsing) = when {
+        // High Security / Connected
+        torStatus.running && torStatus.bootstrapPercent >= 100 -> Color(0xFF00FF7F) to false // Spring Green
+        !torStatus.running && isConnected -> Color(0xFF00FF7F) to false // Mesh Connected (OK)
+        
+        // Medium / In Progress
+        torStatus.running && torStatus.bootstrapPercent < 100 -> Color(0xFFFFCC00) to true // Yellow
+        
+        // Risk / Disconnected
+        else -> Color(0xFFFF4444) to true // Red
+    }
+    
+    val alpha = if (isPulsing) pulseAnim else 1f
+    
+    Canvas(modifier = modifier) {
+        drawCircle(
+            color = dotColor.copy(alpha = alpha),
+            radius = size.minDimension / 2
+        )
+    }
+}
+
+@Composable
+private fun calculatePulseAlpha(): Float {
+    val infiniteTransition = rememberInfiniteTransition()
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.4f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    return alpha
 }
 
 @Composable

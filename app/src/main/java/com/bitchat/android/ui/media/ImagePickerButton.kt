@@ -90,14 +90,14 @@ fun ImagePickerButton(
         modifier = modifier
             .size(32.dp)
             .combinedClickable(
-                onClick = { imagePicker.launch("image/*") },
-                onLongClick = {
+                onClick = {
                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                         startCameraCapture()
                     } else {
                         permissionLauncher.launch(Manifest.permission.CAMERA)
                     }
-                }
+                },
+                onLongClick = { imagePicker.launch("image/*") }
             ),
         contentAlignment = Alignment.Center
     ) {

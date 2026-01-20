@@ -118,7 +118,7 @@ fun ChatScreen(
             .fillMaxSize()
             .background(colorScheme.background) // Extend background to fill entire screen including status bar
     ) {
-        val headerHeight = 42.dp
+        val headerHeight = 70.dp
         
         // Main content area that responds to keyboard/window insets
         Column(
@@ -440,12 +440,24 @@ private fun ChatFloatingHeader(
     ) {
         TopAppBar(
             navigationIcon = {
-                IconButton(onClick = onAvatarClick) {
-                    androidx.compose.material3.Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "My Account",
-                        tint = colorScheme.primary
-                    )
+                // Profile Box - Uses Theme Background (Black/White) and OnBackground (White/Black)
+                Surface(
+                    onClick = onAvatarClick,
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp), // Box shape (Squircle)
+                    color = colorScheme.background, // Adapts to Theme (Black in Dark, White in Light)
+                    border = BorderStroke(2.dp, Color(0xFF00E5FF)), // Always Blue border
+                    modifier = Modifier
+                        .size(56.dp) // Bigger profile click area
+                        .padding(start = 4.dp) // Left margin inside sidebar
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                         androidx.compose.material3.Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "My Account",
+                            tint = colorScheme.onBackground, // Adapts to Theme (White in Dark, Black in Light)
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             },
             title = {

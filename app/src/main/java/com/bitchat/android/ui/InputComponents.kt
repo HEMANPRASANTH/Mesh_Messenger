@@ -238,7 +238,7 @@ fun MessageInput(
                     val secs = (elapsedMs / 1000).toInt()
                     val mm = secs / 60
                     val ss = secs % 60
-                    val maxSecs = 10 // 10 second max recording time
+                    val maxSecs = 300 // 5 minutes max recording time
                     val maxMm = maxSecs / 60
                     val maxSs = maxSecs % 60
                     Text(
@@ -253,8 +253,8 @@ fun MessageInput(
         
         Spacer(modifier = Modifier.width(8.dp)) // Reduced spacing
         
-        // Voice and image buttons when no text (only visible in Mesh chat)
-        if (value.text.isEmpty() && showMediaButtons) {
+        // Voice and image buttons when no text (always show)
+        if (value.text.isEmpty()) {
             // Hold-to-record microphone
             val bg = if (colorScheme.background == Color.Black) Color(0xFF00E5FF).copy(alpha = 0.75f) else Color(0xFF007AFF).copy(alpha = 0.75f)
 
@@ -267,12 +267,11 @@ fun MessageInput(
             if (!isRecording) {
                 // Revert to original separate buttons: round File button (left) and the old Image plus button (right)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    // DISABLE FILE PICKER
-                    //FilePickerButton(
-                    //    onFileReady = { path ->
-                    //        onSendFileNote(latestSelectedPeer.value, latestChannel.value, path)
-                    //    }
-                    //)
+                     FilePickerButton(
+                        onFileReady = { path ->
+                            onSendFileNote(latestSelectedPeer.value, latestChannel.value, path)
+                        }
+                    )
                     ImagePickerButton(
                         onImageReady = { outPath ->
                             onSendImageNote(latestSelectedPeer.value, latestChannel.value, outPath)

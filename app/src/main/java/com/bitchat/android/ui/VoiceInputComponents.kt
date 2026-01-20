@@ -83,8 +83,8 @@ fun VoiceRecordButton(
                                         val amp = recorder?.pollAmplitude() ?: 0
                                         val elapsedMs = (System.currentTimeMillis() - recordingStart).coerceAtLeast(0L)
                                         latestOnAmplitude.value(amp, elapsedMs)
-                                        // Auto-stop after 10 seconds
-                                        if (elapsedMs >= 10_000 && isRecording) {
+                                        // Auto-stop after 5 minutes
+                                        if (elapsedMs >= 300_000 && isRecording) {
                                             val file = recorder?.stop()
                                             isRecording = false
                                             recorder = null
