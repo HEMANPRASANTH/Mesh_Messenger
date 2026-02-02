@@ -24,12 +24,64 @@ fun AccountContent(
     onNicknameChanged: (String) -> Unit,
     onOpenFeatures: () -> Unit,
     onOpenSettings: () -> Unit,
+    onCreateGroup: (String, String) -> Unit, // New callback: (Name, Region)
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editedName by remember { mutableStateOf(currentNickname) }
+    
+    // Create Group Dialog State
+    var showCreateGroupDialog by remember { mutableStateOf(false) }
+    var newGroupName by remember { mutableStateOf("") }
+    var newGroupRegion by remember { mutableStateOf("") }
+    
     val colorScheme = MaterialTheme.colorScheme
+
+    if (showCreateGroupDialog) {
+        AlertDialog(
+            onDismissRequest = { showCreateGroupDialog = false },
+            title = { Text("Create Group") },
+            text = {
+                Column {
+                    Text("Enter group details to broadcast availability region-wise.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = newGroupName,
+                        onValueChange = { newGroupName = it },
+                        label = { Text("Group Name") },
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newGroupRegion,
+                        onValueChange = { newGroupRegion = it },
+                        label = { Text("Region (e.g. India)") },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (newGroupName.isNotBlank() && newGroupRegion.isNotBlank()) {
+                            onCreateGroup(newGroupName, newGroupRegion)
+                            showCreateGroupDialog = false
+                            newGroupName = ""
+                            newGroupRegion = ""
+                        }
+                    }
+                ) {
+                    Text("Create")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCreateGroupDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = modifier.padding(24.dp),
@@ -106,16 +158,13 @@ fun AccountContent(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Create Account Button (Requested Feature)
+        // Create Group Button (Requested Feature)
         GlassButton(
-            text = "Create Account",
-            onClick = { /* TODO: Implement Account Creation Flow */ },
+            text = "Create Group",
+            onClick = { showCreateGroupDialog = true },
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Logout Button
         Spacer(modifier = Modifier.weight(1f))
 
         // Logout Premium Box
@@ -158,6 +207,7 @@ fun AccountScreen(
     onNicknameChanged: (String) -> Unit,
     onOpenFeatures: () -> Unit,
     onOpenSettings: () -> Unit,
+    onCreateGroup: (String, String) -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -186,6 +236,7 @@ fun AccountScreen(
             onNicknameChanged = onNicknameChanged,
             onOpenFeatures = onOpenFeatures,
             onOpenSettings = onOpenSettings,
+            onCreateGroup = onCreateGroup,
             onLogout = onLogout,
             modifier = Modifier
                 .fillMaxSize()

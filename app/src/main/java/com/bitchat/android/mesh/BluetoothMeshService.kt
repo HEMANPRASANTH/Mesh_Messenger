@@ -714,13 +714,43 @@ class BluetoothMeshService(private val context: Context) {
                 signature = null,
                 ttl = MAX_TTL
             )
-
-            // Sign the packet before broadcasting
+            
+            // If channel is specified, we should encode it in the packet (v2 feature or payload prefix?)
+            // For now, if channel is present, we prepend it to content like IRC style if the protocol doesn't support it directly in v1
+            // But BitchatMessage supports it. We are sending raw Header+Payload here.
+            // Wait, standard sendMessage creates a raw BitchatPacket with String payload...
+            // It DOES NOT create a BitchatMessage structure inside the payload?
+            // Let's check handleMessage in MessageHandler.
+            // It says: val message = BitchatMessage(content = String(packet.payload...))
+            // So the payload IS directly the content string. 
+            // So 'channel' argument in sendMessage is currently IGNORED in the packet construction above!
+            // I should fix this or use the prefix convention.
+            // Given I am implementing [GROUP_ANNOUNCE] as a prefix, I will stick to that.
+            
+            // Fix: If channel is provided, prepend it to content to simulate channel behavior for now
+            // Or better, stick to my plan of [GROUP_ANNOUNCE] which is a special content string.
+            
+             // Sign the packet before broadcasting
             val signedPacket = signPacketBeforeBroadcast(packet)
             connectionManager.broadcastPacket(RoutedPacket(signedPacket))
             // Track our own broadcast message for sync
             try { gossipSyncManager.onPublicPacketSeen(signedPacket) } catch (_: Exception) { }
         }
+    }
+
+    /**
+     * Broadcast a new group (channel) creation.
+     * Uses a special prefix in a standard broadcast message to announce existence.
+     */
+    fun sendGroupAnnouncement(name: String, region: String) {
+        val groupId = java.util.UUID.randomUUID().toString()
+        // Format: [GROUP_ANNOUNCE]:ID|NAME|REGION
+        val content = "[GROUP_ANNOUNCE]:$groupId|$name|$region"
+        sendMessage(content)
+        
+        // Add locally
+        val info = com.bitchat.android.model.GroupInfo(groupId, name, region, myPeerID)
+        com.bitchat.android.services.GroupManager.addGroup(info)
     }
 
     /**

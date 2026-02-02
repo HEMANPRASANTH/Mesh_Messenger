@@ -42,6 +42,7 @@ dependency-reduced-pom.xml
 
 # Other
 *.log
+build_log*.txt
 .cxx/
 # Gradle/Android build directories (but not tools/arti-build/)
 **/build/

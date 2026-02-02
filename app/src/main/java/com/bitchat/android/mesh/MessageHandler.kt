@@ -415,9 +415,31 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
             }
 
             // Fallback: plain text
+            val textContent = String(packet.payload, Charsets.UTF_8)
+            
+            // Check for Group Announcement
+            // Format: [GROUP_ANNOUNCE]:ID|NAME|REGION
+            if (textContent.startsWith("[GROUP_ANNOUNCE]:")) {
+                try {
+                    val parts = textContent.removePrefix("[GROUP_ANNOUNCE]:").split("|")
+                    if (parts.size >= 3) {
+                        val groupId = parts[0]
+                        val name = parts[1]
+                        val region = parts[2]
+                        val group = com.bitchat.android.model.GroupInfo(groupId, name, region, peerID, packet.timestamp.toLong())
+                        com.bitchat.android.services.GroupManager.addGroup(group)
+                        Log.d(TAG, "Added new group from mesh: $name in $region")
+                        // Do not show system announcements in chat stream
+                        return 
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to parse group announce: ${e.message}")
+                }
+            }
+
             val message = BitchatMessage(
                 sender = delegate?.getPeerNickname(peerID) ?: "unknown",
-                content = String(packet.payload, Charsets.UTF_8),
+                content = textContent,
                 senderPeerID = peerID,
                 timestamp = Date(packet.timestamp.toLong())
             )

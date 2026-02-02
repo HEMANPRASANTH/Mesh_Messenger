@@ -322,6 +322,13 @@ class MainActivity : OrientationAwareActivity() {
                                         scope.launch { drawerState.close() }
                                         currentScreen = AppScreen.SETTINGS
                                     },
+                                    onCreateGroup = { name, region ->
+                                        // Broadcast group announcement
+                                        meshService.sendGroupAnnouncement(name, region)
+                                        scope.launch { drawerState.close() }
+                                        // Optional: Navigate to chat text box or show confirmation
+                                        // For now, just close drawer
+                                    },
                                     onLogout = {
                                         scope.launch { drawerState.close() }
                                         isSignedUp = false
@@ -372,6 +379,9 @@ class MainActivity : OrientationAwareActivity() {
                                 },
                                 onOpenFeatures = { currentScreen = AppScreen.FEATURES },
                                 onOpenSettings = { currentScreen = AppScreen.SETTINGS },
+                                onCreateGroup = { name, region ->
+                                    meshService.sendGroupAnnouncement(name, region)
+                                },
                                 onBack = { currentScreen = AppScreen.CHAT },
                                 onLogout = {
                                      // Reset Sign Up State
