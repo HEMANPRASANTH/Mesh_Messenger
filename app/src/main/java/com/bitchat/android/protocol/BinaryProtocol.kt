@@ -113,7 +113,7 @@ data class BitchatPacket(
          * Convert hex string peer ID to binary data (8 bytes) - exactly same as iOS
          */
         private fun hexStringToByteArray(hexString: String): ByteArray {
-            val result = ByteArray(8) { 0 } // Initialize with zeros, exactly 8 bytes
+            val result = ByteArray(8) // Initialize with zeros, exactly 8 bytes
             var tempID = hexString
             var index = 0
             
