@@ -8,10 +8,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.bitchat.android.R
 
@@ -22,104 +24,81 @@ import com.bitchat.android.R
 fun InitializingScreen(modifier: Modifier) {
     val colorScheme = MaterialTheme.colorScheme
     
-    // Animated rotation for the loading indicator
-    val infiniteTransition = rememberInfiniteTransition(label = "loading")
-    val rotationAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
+    // Animated scale for the "X"
+    val infiniteTransition = rememberInfiniteTransition(label = "splash_animation")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1.5f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+            animation = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+
+    // Animated rotation (subtle flow)
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = -10f,
+        targetValue = 10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
         ),
         label = "rotation"
     )
-
-    // Animated dots for loading text
-    val dotCount = 3
-    val animationDelay = 300
-    val dots = (0 until dotCount).map { index ->
-        val alpha by infiniteTransition.animateFloat(
-            initialValue = 0.3f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = animationDelay * dotCount),
-                repeatMode = RepeatMode.Reverse,
-                initialStartOffset = StartOffset(animationDelay * index)
-            ),
-            label = "dot_$index"
-        )
-        alpha
-    }
 
     Box(
         modifier = modifier.padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
         ) {
-            // App title
+            // App Title "Mesh"
             Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.displayMedium.copy(
+                text = "Mesh", // Explicitly using Mesh to ensure "bit" is not shown
+                style = MaterialTheme.typography.displayLarge.copy(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary
                 ),
                 textAlign = TextAlign.Center
             )
+            
+            Spacer(modifier = Modifier.height(60.dp))
 
-            // Loading indicator (Glass Container)
-            com.bitchat.android.ui.components.GlassCard(
-                modifier = Modifier.size(100.dp),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(50.dp) // Circle
-            ) {
-                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .rotate(rotationAngle),
-                        color = colorScheme.primary,
-                        strokeWidth = 4.dp
+            // Animated "X"
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(200.dp)
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        rotationZ = rotation
                     )
-                 }
-            }
-
-            // Loading text with animated dots
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = stringResource(R.string.initializing_mesh_network),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontFamily = FontFamily.Monospace,
-                        color = Color.White.copy(alpha = 0.9f)
+                    text = "X",
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontFamily = FontFamily.SansSerif, // or Monospace
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 120.sp,
+                        color = colorScheme.secondary
                     )
                 )
-                
-                // Animated dots
-                dots.forEach { alpha ->
-                    Text(
-                        text = stringResource(R.string.dot),
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontFamily = FontFamily.Monospace,
-                            color = Color.White.copy(alpha = alpha)
-                        )
-                    )
-                }
             }
+            
+            Spacer(modifier = Modifier.height(60.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Status message
+            // Status message (kept minimal)
             com.bitchat.android.ui.components.GlassCard(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(0.8f)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -127,15 +106,6 @@ fun InitializingScreen(modifier: Modifier) {
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontFamily = FontFamily.Monospace,
                             color = Color.White.copy(alpha = 0.9f)
-                        ),
-                        textAlign = TextAlign.Center
-                    )
-                    
-                    Text(
-                        text = stringResource(R.string.should_take_seconds),
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontFamily = FontFamily.Monospace,
-                            color = Color.White.copy(alpha = 0.6f)
                         ),
                         textAlign = TextAlign.Center
                     )
