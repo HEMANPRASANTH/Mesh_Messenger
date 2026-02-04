@@ -59,6 +59,10 @@ RUN chmod +x gradlew
 # Copy source code
 COPY . .
 
+# Overwrite gradle.properties with the Docker-specific one again
+# because 'COPY . .' might have overwritten it with the local Windows version
+COPY docker-gradle.properties gradle.properties
+
 # Default command to build the debug APK
 # Output will be in /app/app/build/outputs/apk/debug/
 CMD ["./gradlew", "assembleDebug"]

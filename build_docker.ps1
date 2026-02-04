@@ -36,7 +36,7 @@ if ($Clean) {
 }
 
 Write-Host "Starting Docker Build... (This may take a while)" -ForegroundColor Green
-docker compose up --build
+docker compose up --build --exit-code-from android-build
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`nBuild Successful!" -ForegroundColor Green
