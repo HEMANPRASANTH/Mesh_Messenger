@@ -40,7 +40,7 @@ docker compose up --build --exit-code-from android-build
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`nBuild Successful!" -ForegroundColor Green
-    $apkPath = "app/build/outputs/apk/debug/app-debug.apk"
+    $apkPath = "app/build/outputs/apk/debug/app-universal-debug.apk"
     Write-Host "APK location: $apkPath" -ForegroundColor Cyan
     
     # Check if file exists
