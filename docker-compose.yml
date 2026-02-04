@@ -4,10 +4,9 @@ services:
     volumes:
       # Mount the output directory to the host machine to access the APK
       - ./app/build/outputs:/app/app/build/outputs
-      # Optional: Mount the gradle cache to speed up subsequent builds (be careful with permissions)
-      # - gradle_cache:/root/.gradle
+      # Persistent Gradle cache for faster re-builds
+      - gradle_cache:/root/.gradle
     command: ./gradlew assembleDebug
 
-# Optional: Define a volume for gradle cache
-# volumes:
-#   gradle_cache:
+volumes:
+  gradle_cache:
