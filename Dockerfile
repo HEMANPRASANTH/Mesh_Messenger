@@ -41,9 +41,9 @@ WORKDIR /app
 # Copy Gradle wrapper and properties to cache dependencies
 COPY gradle/ gradle/
 COPY gradlew .
-COPY gradle.properties .
-# Remove the Windows-specific java.home property if it exists, as it breaks the Linux build
-RUN sed -i '/org.gradle.java.home/d' gradle.properties
+# Copy Docker-specific gradle properties
+COPY docker-gradle.properties gradle.properties
+# COPY gradle.properties . # Do not copy the local windows one specifically
 
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
