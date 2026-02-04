@@ -40,11 +40,36 @@ docker compose up --build --exit-code-from android-build
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`nBuild Successful!" -ForegroundColor Green
-    Write-Host "APK location: app/build/outputs/apk/debug/app-debug.apk" -ForegroundColor Cyan
+    $apkPath = "app/build/outputs/apk/debug/app-debug.apk"
+    Write-Host "APK location: $apkPath" -ForegroundColor Cyan
     
     # Check if file exists
-    if (Test-Path "app/build/outputs/apk/debug/app-debug.apk") {
-        Invoke-Item "app/build/outputs/apk/debug"
+    if (Test-Path $apkPath) {
+        # Setup ADB Path
+        $adbPath = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+        if (-not (Test-Path $adbPath)) {
+            Write-Warning "ADB not found at standard location. Cannot install automatically."
+            Invoke-Item "app/build/outputs/apk/debug"
+        }
+        else {
+            Write-Host "`nAttempting to install on connected device..." -ForegroundColor Magenta
+            
+            # Check for devices
+            $deviceCheck = & $adbPath devices
+            if ($deviceCheck -match "\tdevice") {
+                Write-Host "Device found. Installing APK..." -ForegroundColor Green
+                & $adbPath install -r $apkPath
+                
+                Write-Host "Launching App..." -ForegroundColor Green
+                # Launch the app (Main Activity)
+                & $adbPath shell monkey -p com.bitchat.droid -c android.intent.category.LAUNCHER 1 | Out-Null
+                Write-Host "Done! App should be running on your phone." -ForegroundColor Cyan
+            }
+            else {
+                Write-Warning "No device connected via USB Debugging. Skipping installation."
+                Invoke-Item "app/build/outputs/apk/debug"
+            }
+        }
     }
 }
 else {
